@@ -9,7 +9,7 @@ function BudgetForm({ budget, onSave }) {
     event.preventDefault()
     const amount = Number(value)
 
-    if (!value.trim() || Number.isNaN(amount) || amount <= 0) {
+    if (!value.trim() || !Number.isFinite(amount) || amount <= 0) {
       setError('Enter a budget greater than zero.')
       return
     }

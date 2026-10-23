@@ -3,6 +3,7 @@ import BudgetForm from './components/BudgetForm.jsx'
 import ExpenseForm from './components/ExpenseForm.jsx'
 import ExpenseList from './components/ExpenseList.jsx'
 import Summary from './components/Summary.jsx'
+import { expensesCsv, validExpenses } from './expenseData.js'
 import './App.css'
 
 const BUDGET_KEY = 'budget-tracker:budget'
@@ -38,23 +39,36 @@ function makeId() {
 function App() {
   const [budget, setBudget] = useState(loadBudget)
   const [expenses, setExpenses] = useState(loadExpenses)
+  const [storageError, setStorageError] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(BUDGET_KEY, String(budget))
-  }, [budget])
+    try {
+      localStorage.setItem(BUDGET_KEY, String(budget))
+      localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses))
+      setStorageError(false)
+    } catch { setStorageError(true) }
+  }, [budget, expenses])
 
-  useEffect(() => {
-    localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses))
-  }, [expenses])
+  function exportExpenses() {
+    const url = URL.createObjectURL(new Blob([expensesCsv(orderedExpenses)], { type: 'text/csv;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'budget-tracker-expenses.csv'
+    document.body.append(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
 
+  const usableExpenses = useMemo(() => validExpenses(expenses), [expenses])
   const spent = useMemo(
-    () => expenses.reduce((total, expense) => total + expense.amount, 0),
-    [expenses],
+    () => usableExpenses.reduce((total, expense) => total + expense.amount, 0),
+    [usableExpenses],
   )
 
   const orderedExpenses = useMemo(
-    () => [...expenses].sort((a, b) => b.createdAt - a.createdAt),
-    [expenses],
+    () => [...usableExpenses].sort((a, b) => b.createdAt - a.createdAt),
+    [usableExpenses],
   )
 
   function addExpense(expense) {
@@ -65,15 +79,22 @@ function App() {
   }
 
   function deleteExpense(id) {
-    setExpenses((current) => current.filter((expense) => expense.id !== id))
+    setExpenses((current) => current.filter((expense) => expense?.id !== id))
   }
 
   return (
     <div className="page">
       <header className="page-head">
         <h1>Budget Tracker</h1>
-        <p>See where your money goes this month.</p>
+        <p>Track your budget and spending in this browser.</p>
       </header>
+
+      <section className="card export-panel" aria-label="Your data">
+        <p>Your budget and expenses stay in this browser. Clearing site data removes them. Export a copy of your expenses before changing devices.</p>
+        <button className="btn btn-primary" type="button" disabled={!usableExpenses.length} onClick={exportExpenses}>Export expenses (.csv)</button>
+      </section>
+      {usableExpenses.length !== expenses.length && <p className="form-error" role="alert">Some saved entries could not be displayed. They remain in browser storage; the CSV includes valid expenses only.</p>}
+      {storageError && <p className="form-error" role="alert">This browser could not save your changes. Keep this tab open and export your expenses before leaving.</p>}
 
       <Summary budget={budget} spent={spent} />
 
