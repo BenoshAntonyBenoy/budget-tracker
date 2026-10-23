@@ -15,6 +15,10 @@
   letter-spacing: -0.02em;
 }
 
+.export-panel { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+.export-panel p { flex: 1 1 320px; margin: 0; color: var(--ink-soft); line-height: 1.5; }
+.export-panel button:disabled { opacity: .55; cursor: not-allowed; }
+
 .page-head p {
   margin: 6px 0 0;
   color: var(--ink-soft);

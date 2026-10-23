@@ -14,8 +14,14 @@ back.
 - The remaining balance turns red once you go over budget
 - Newest expenses show up first, and you can remove any of them
 - Amounts are formatted with the ₹ symbol and Indian digit grouping
+- Export all expenses as a spreadsheet-safe CSV, including their recorded date
 - Your budget and expenses are saved automatically and reloaded on your next
   visit
+
+Data stays in the current browser; clearing its site data removes it. CSV export
+contains expenses, not the budget limit. If storage is unavailable, the app keeps
+working in memory and shows a warning. Malformed saved entries are ignored.
+Run `npm test`, `npm run lint` and `npm run build` before releasing.
 
 ## Running it locally
 

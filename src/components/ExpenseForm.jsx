@@ -19,7 +19,7 @@ function ExpenseForm({ onAdd }) {
       return
     }
 
-    if (!amount.trim() || Number.isNaN(value) || value <= 0) {
+    if (!amount.trim() || !Number.isFinite(value) || value <= 0) {
       setError('The amount has to be more than zero.')
       return
     }
